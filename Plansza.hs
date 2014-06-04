@@ -1,3 +1,5 @@
+module Plansza where
+
 import System.IO
 
 
@@ -79,6 +81,16 @@ displayGame = do printOptions
                  printInterface
                  printBoard initialBoard
 
+
+inputReader :: IO Bool
+inputReader = do
+          str <- getLine
+          case str of
+            "q" -> return False
+            otherwise -> do
+              putStrLn "Jakas komenda."
+              displayGame
+              inputReader
 --saveToFile :: FilePath -> IO()
 
 --loadFromFile :: FilePath -> IO()
