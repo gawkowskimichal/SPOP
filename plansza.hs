@@ -10,6 +10,12 @@ data State = NowyStan (Pos,Pos,Pos,Pos,Pos)
 data Gra = NowaGra (Board, State)
 type FilePath = String
 
+printInterface::IO()
+printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
+
+printOptions::IO()
+printOptions = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie zapisanych gier w katalogu domyslnym \n q - koniec gry"
+
 printedBoard::Board -> String
 printedBoard = unlines . map(concatMap printSquare)
 
@@ -66,9 +72,12 @@ initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing
 
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 
---displayState :: IO()
 
---displayInterface :: IO()
+
+displayGame :: IO()
+displayGame = do printOptions
+                 printInterface
+                 printBoard initialBoard
 
 --saveToFile :: FilePath -> IO()
 
