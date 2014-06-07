@@ -87,6 +87,22 @@ inputReader = do
           str <- getLine
           case str of
             "q" -> return False
+            "7" -> do
+                putStrLn "góra+lewo"
+                displayGame
+                inputReader
+            "9" -> do
+                putStrLn "góra+prawo"
+                displayGame
+                inputReader
+            "1" -> do
+                putStrLn "dół+lewo"
+                displayGame
+                inputReader
+            "3" -> do
+                putStrLn "dół+prawo"
+                displayGame
+                inputReader
             otherwise -> do
               putStrLn "Jakas komenda."
               displayGame
