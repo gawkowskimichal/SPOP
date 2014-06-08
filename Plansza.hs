@@ -1,6 +1,7 @@
 module Plansza where
 
 import System.IO
+import System.Directory
 
 
 data Piece = Piece PieceType deriving Eq
@@ -8,15 +9,15 @@ data PieceType = Owca | Wilk deriving Eq
 type Square = Maybe Piece
 type Board = [[Square]]
 type Pos = (Int, Int)
-data State = NowyStan (Pos,Pos,Pos,Pos,Pos)
+data State = NowyStan (Pos,Pos,Pos,Pos,Pos) deriving (Read,Show)
 data Gra = NowaGra (Board, State)
-type FilePath = String
+type File_Path = String
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
 
 printOptions::IO()
-printOptions = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie zapisanych gier w katalogu domyslnym \n q - koniec gry"
+printOptions = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie plikow w bierzacym katalogu \n q - koniec gry"
 
 printedBoard::Board -> String
 printedBoard = unlines . map(concatMap printSquare)
@@ -73,7 +74,7 @@ initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing
                 [Just (Piece Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
 
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
-
+initialState = NowyStan ((7,0), (0,1), (0,3), (0,5), (0,7))
 
 
 displayGame :: IO()
@@ -87,6 +88,10 @@ inputReader = do
           str <- getLine
           case str of
             "q" -> return False
+            "l" -> do
+                listFiles
+                displayGame
+                inputReader
             "7" -> do
                 putStrLn "góra+lewo"
                 displayGame
@@ -107,6 +112,19 @@ inputReader = do
               putStrLn "Jakas komenda."
               displayGame
               inputReader
---saveToFile :: FilePath -> IO()
 
---loadFromFile :: FilePath -> IO()
+save :: State -> File_Path -> IO ()
+save zs f = writeFile f (show zs)
+
+load :: File_Path -> IO State
+load f = do
+         s <- readFile f
+         return (read s)
+
+listFiles :: IO()
+listFiles = do
+        cd <- getCurrentDirectory
+        files <- getDirectoryContents cd
+        print files
+
+initialGame = NowaGra( initialBoard, initialState )
