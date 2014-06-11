@@ -4,7 +4,7 @@ import Plansza
 
 main :: IO ()
 main = do
-         displayGame
+         displayGame getInitialState
          fun <- inputReader
          if fun
           then putStrLn "jakas opcja zostala wybrana"

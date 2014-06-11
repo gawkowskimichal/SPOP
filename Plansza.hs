@@ -9,9 +9,10 @@ data PieceType = Owca | Wilk deriving Eq
 type Square = Maybe Piece
 type Board = [[Square]]
 type Pos = (Int, Int)
-data State = NowyStan (Pos,Pos,Pos,Pos,Pos) deriving (Read,Show)
-data Gra = NowaGra (Board, State)
+type Stan = [Pos]
+data Gra = NowaGra (Board, Stan)
 type File_Path = String
+
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
@@ -51,6 +52,12 @@ deleteSquare p = updateBoard p emptySquare
 movePos::Pos-> Pos-> Board-> Board
 movePos p1 p2 b = updateBoard p2 (getSquare b p1) (deleteSquare p1 b)
 
+setPieceOnBoard::PieceType -> Pos -> Board -> Board
+setPieceOnBoard piece pos b = updateBoard pos (Just (Piece piece)) b
+
+setPiecesOnBoard::Stan -> Board -> Board
+setPiecesOnBoard a b = setPieceOnBoard Owca (a!!4) (setPieceOnBoard Owca (a!!3) (setPieceOnBoard Owca (a!!2) (setPieceOnBoard Owca (a!!1) (setPieceOnBoard Wilk (head a) b))))
+
 updateList::[a]-> Int-> (a-> a)-> [a]
 updateList [] _ _ = []
 updateList (x:xs) 0 f = (f x):xs
@@ -74,13 +81,18 @@ initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing
                 [Just (Piece Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
 
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
-initialState = NowyStan ((7,0), (0,1), (0,3), (0,5), (0,7))
+initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
+getEmptyBoard :: Board
+getEmptyBoard = emptyBoard
 
-displayGame :: IO()
-displayGame = do printOptions
-                 printInterface
-                 printBoard initialBoard
+getInitialState :: Stan
+getInitialState = initialState
+
+displayGame :: Stan -> IO()
+displayGame a = do printOptions
+                   printInterface
+                   printBoard (insertStateToBoard a)
 
 
 inputReader :: IO Bool
@@ -90,33 +102,33 @@ inputReader = do
             "q" -> return False
             "l" -> do
                 listFiles
-                displayGame
+                displayGame getInitialState
                 inputReader
             "7" -> do
                 putStrLn "góra+lewo"
-                displayGame
+                displayGame getInitialState
                 inputReader
             "9" -> do
                 putStrLn "góra+prawo"
-                displayGame
+                displayGame getInitialState
                 inputReader
             "1" -> do
                 putStrLn "dół+lewo"
-                displayGame
+                displayGame getInitialState
                 inputReader
             "3" -> do
                 putStrLn "dół+prawo"
-                displayGame
+                displayGame getInitialState
                 inputReader
             otherwise -> do
-              putStrLn "Jakas komenda."
-              displayGame
+              putStrLn "Niepoprawna komenda."
+              displayGame getInitialState
               inputReader
 
-save :: State -> File_Path -> IO ()
+save :: Stan -> File_Path -> IO ()
 save zs f = writeFile f (show zs)
 
-load :: File_Path -> IO State
+load :: File_Path -> IO Stan
 load f = do
          s <- readFile f
          return (read s)
@@ -128,3 +140,6 @@ listFiles = do
         print files
 
 initialGame = NowaGra( initialBoard, initialState )
+
+insertStateToBoard :: Stan -> Board
+insertStateToBoard a = setPiecesOnBoard a emptyBoard
