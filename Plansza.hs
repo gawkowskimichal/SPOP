@@ -10,7 +10,7 @@ type Square = Maybe Piece
 type Board = [[Square]]
 type Pos = (Int, Int)
 type Stan = [Pos]
-data Gra = NowaGra (Board, Stan)
+--data Gra = NowaGra (Board, Stan)
 type File_Path = String
 
 
@@ -34,8 +34,8 @@ instance Show PieceType where
  show Owca = "O"
  show Wilk = "W"
 
-isEmpty::Board-> Pos-> Bool
-isEmpty board pos = Nothing == getSquare board pos
+--isEmpty::Board-> Pos-> Bool
+--isEmpty board pos = Nothing == getSquare board pos
 
 emptySquare::Square
 emptySquare = Nothing
@@ -49,8 +49,8 @@ updateBoard = updateMatrix
 deleteSquare::Pos-> Board-> Board
 deleteSquare p = updateBoard p emptySquare
 
-movePos::Pos-> Pos-> Board-> Board
-movePos p1 p2 b = updateBoard p2 (getSquare b p1) (deleteSquare p1 b)
+--movePos::Pos-> Pos-> Board-> Board
+--movePos p1 p2 b = updateBoard p2 (getSquare b p1) (deleteSquare p1 b)
 
 setPieceOnBoard::PieceType -> Pos -> Board -> Board
 setPieceOnBoard piece pos b = updateBoard pos (Just (Piece piece)) b
@@ -66,12 +66,14 @@ updateList (x:xs) n f = x:updateList xs (n-1) f
 updateMatrix::(Int, Int)-> a-> [[a]]-> [[a]]
 updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 
-outside,inside::Pos-> Bool
-outside (a, b) = a < 0 || b < 0 || a > 7 || b > 7
-inside = not . outside
+--outside,inside::Pos-> Bool
+--outside (a, b) = a < 0 || b < 0 || a > 7 || b > 7
+--inside = not . outside
 
-initialBoard, emptyBoard::Board
-initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca)],
+emptyBoard::Board
+
+--initialBoard::Board 
+{--initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca)],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
@@ -79,28 +81,28 @@ initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Just (Piece Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
-
+--}
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
-                                 7 -> if (((fst s) - 1) >= 0) && (((snd s)) >= 1) then
-                                        [((fst s - 1),(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
-                                    else
-                                        state
+                                 7 -> if fst s - 1 >= 1 && snd s - 1 >= 1 then
+                                        [(fst s - 1,snd s - 1), (0,1), (0,3), (0,5), (0,7)]
+                                    else do
+                                        s:state
                                  9 -> if ((fst s) - 1) >= 0 && ((snd s) + 1) <= 7 then
                                         [((fst s) - 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
-                                        state
+                                        s:state
                                  1 -> if ((fst s) + 1) <= 7 && ((snd s) - 1) >= 0 then
                                         [((fst s) + 1,(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
-                                        state
+                                        s:state
                                  3 -> if ((fst s) + 1) <= 7 && ((snd s) + 1) <= 7 then
                                         [((fst s) + 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
-                                        state
+                                        s:state
 
 
 getEmptyBoard :: Board
@@ -115,35 +117,39 @@ displayGame a = do printOptions
                    printBoard (insertStateToBoard a)
 
 
-inputReader :: IO Bool
-inputReader = do
+inputReader :: Stan -> IO Bool
+inputReader currentState = do
           str <- getLine
           case str of
             "q" -> return False
             "l" -> do
                 listFiles
-                displayGame getInitialState
-                inputReader
+                displayGame currentState
+                inputReader currentState
             "7" -> do
                 putStrLn "góra+lewo"
-                displayGame (updateState initialState 7)
-                inputReader
+                displayGame (updateState currentState 7)
+                inputReader (updateState currentState 7)
             "9" -> do
                 putStrLn "góra+prawo"
-                displayGame (updateState initialState 9)
-                inputReader
+                displayGame (updateState currentState 9)
+                inputReader (updateState currentState 9)
             "1" -> do
                 putStrLn "dół+lewo"
-                displayGame (updateState initialState 1)
-                inputReader
+                displayGame (updateState currentState 1)
+                inputReader (updateState currentState 1)
             "3" -> do
                 putStrLn "dół+prawo"
-                displayGame (updateState initialState 3)
-                inputReader
+                displayGame (updateState currentState 3)
+                inputReader (updateState currentState 3)
+            "n" -> do
+                putStrLn "nowa gra"
+                displayGame initialState
+                inputReader initialState
             otherwise -> do
               putStrLn "Niepoprawna komenda."
-              displayGame getInitialState
-              inputReader
+              displayGame currentState
+              inputReader currentState
 
 save :: Stan -> File_Path -> IO ()
 save zs f = writeFile f (show zs)
@@ -159,7 +165,7 @@ listFiles = do
         files <- getDirectoryContents cd
         print files
 
-initialGame = NowaGra( initialBoard, initialState )
+--initialGame = NowaGra( initialBoard, initialState )
 
 insertStateToBoard :: Stan -> Board
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
