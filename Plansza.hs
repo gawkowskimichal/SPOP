@@ -85,10 +85,22 @@ initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
-                                 7 -> [(6,1), (0,1), (0,3), (0,5), (0,7)]
-                                 9 -> [(6,3), (0,1), (0,3), (0,5), (0,7)]
-                                 1 -> [(6,5), (0,1), (0,3), (0,5), (0,7)]
-                                 3 -> [(6,7), (0,1), (0,3), (0,5), (0,7)]
+                                 7 -> if (((fst s) - 1) >= 0) && (((snd s)) >= 1) then
+                                        [((fst s - 1),(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
+                                    else
+                                        state
+                                 9 -> if ((fst s) - 1) >= 0 && ((snd s) + 1) <= 7 then
+                                        [((fst s) - 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
+                                    else
+                                        state
+                                 1 -> if ((fst s) + 1) <= 7 && ((snd s) - 1) >= 0 then
+                                        [((fst s) + 1,(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
+                                    else
+                                        state
+                                 3 -> if ((fst s) + 1) <= 7 && ((snd s) + 1) <= 7 then
+                                        [((fst s) + 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
+                                    else
+                                        state
 
 
 getEmptyBoard :: Board
