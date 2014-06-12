@@ -83,6 +83,14 @@ initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
+updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
+updateState (s:state) move = case move of
+                                 7 -> [(6,1), (0,1), (0,3), (0,5), (0,7)]
+                                 9 -> [(6,3), (0,1), (0,3), (0,5), (0,7)]
+                                 1 -> [(6,5), (0,1), (0,3), (0,5), (0,7)]
+                                 3 -> [(6,7), (0,1), (0,3), (0,5), (0,7)]
+
+
 getEmptyBoard :: Board
 getEmptyBoard = emptyBoard
 
@@ -106,19 +114,19 @@ inputReader = do
                 inputReader
             "7" -> do
                 putStrLn "góra+lewo"
-                displayGame getInitialState
+                displayGame (updateState initialState 7)
                 inputReader
             "9" -> do
                 putStrLn "góra+prawo"
-                displayGame getInitialState
+                displayGame (updateState initialState 9)
                 inputReader
             "1" -> do
                 putStrLn "dół+lewo"
-                displayGame getInitialState
+                displayGame (updateState initialState 1)
                 inputReader
             "3" -> do
                 putStrLn "dół+prawo"
-                displayGame getInitialState
+                displayGame (updateState initialState 3)
                 inputReader
             otherwise -> do
               putStrLn "Niepoprawna komenda."
