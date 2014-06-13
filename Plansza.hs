@@ -208,3 +208,15 @@ listFiles = do
 
 insertStateToBoard :: Stan -> Board
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
+
+
+czyWilkWygrywa :: Stan -> Bool
+czyWilkWygrywa (x:xs) = do if snd x == 0 then True else False
+
+czyOwceWygrywaja :: Stan -> Bool
+czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
+                                     || isValidMove (fst s - 1) (snd s + 1) state
+                                     || isValidMove (fst s + 1) (snd s - 1) state
+                                     || isValidMove (fst s + 1) (snd s + 1) state then
+                                     False
+                              else True
