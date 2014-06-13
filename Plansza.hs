@@ -70,6 +70,12 @@ updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 --outside (a, b) = a < 0 || b < 0 || a > 7 || b > 7
 --inside = not . outside
 
+isValidMove :: Int -> Int -> Bool
+isValidMove row col = if row >= 0 && col >= 0 && row <=7 && col <=7 then
+                        True
+                      else
+                        False
+
 emptyBoard::Board
 
 --initialBoard::Board 
@@ -87,19 +93,19 @@ initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
-                                 7 -> if fst s - 1 >= 1 && snd s - 1 >= 1 then
+                                 7 -> if isValidMove (fst s - 1) (snd s - 1) then
                                         [(fst s - 1,snd s - 1), (0,1), (0,3), (0,5), (0,7)]
-                                    else do
+                                    else
                                         s:state
-                                 9 -> if ((fst s) - 1) >= 0 && ((snd s) + 1) <= 7 then
+                                 9 -> if isValidMove (fst s - 1) (snd s + 1) then
                                         [((fst s) - 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
-                                 1 -> if ((fst s) + 1) <= 7 && ((snd s) - 1) >= 0 then
+                                 1 -> if isValidMove (fst s + 1) (snd s - 1) then
                                         [((fst s) + 1,(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
-                                 3 -> if ((fst s) + 1) <= 7 && ((snd s) + 1) <= 7 then
+                                 3 -> if isValidMove (fst s + 1) (snd s + 1) then
                                         [((fst s) + 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
