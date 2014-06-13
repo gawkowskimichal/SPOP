@@ -70,11 +70,13 @@ updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 --outside (a, b) = a < 0 || b < 0 || a > 7 || b > 7
 --inside = not . outside
 
-isValidMove :: Int -> Int -> Bool
-isValidMove row col = if row >= 0 && col >= 0 && row <=7 && col <=7 then
-                        True
+isValidMove :: Int -> Int -> [(Int,Int)]-> Bool
+isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
+                        not (elem (row, col) sheep)
                       else
                         False
+
+
 
 emptyBoard::Board
 
@@ -93,19 +95,19 @@ initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
-                                 7 -> if isValidMove (fst s - 1) (snd s - 1) then
+                                 7 -> if isValidMove (fst s - 1) (snd s - 1) state then
                                         [(fst s - 1,snd s - 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
-                                 9 -> if isValidMove (fst s - 1) (snd s + 1) then
+                                 9 -> if isValidMove (fst s - 1) (snd s + 1) state then
                                         [((fst s) - 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
-                                 1 -> if isValidMove (fst s + 1) (snd s - 1) then
+                                 1 -> if isValidMove (fst s + 1) (snd s - 1) state then
                                         [((fst s) + 1,(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
-                                 3 -> if isValidMove (fst s + 1) (snd s + 1) then
+                                 3 -> if isValidMove (fst s + 1) (snd s + 1) state then
                                         [((fst s) + 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
                                     else
                                         s:state
