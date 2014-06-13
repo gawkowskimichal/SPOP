@@ -2,7 +2,8 @@ module Plansza where
 
 import System.IO
 import System.Directory
-
+import Data.Char
+import Control.Exception
 
 data Piece = Piece PieceType deriving Eq
 data PieceType = Owca | Wilk deriving Eq
@@ -12,7 +13,7 @@ type Pos = (Int, Int)
 type Stan = [Pos]
 --data Gra = NowaGra (Board, Stan)
 type File_Path = String
-
+data Parser a = P (String -> [(a, String)])
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
@@ -124,40 +125,70 @@ displayGame a = do printOptions
                    printInterface
                    printBoard (insertStateToBoard a)
 
-
 inputReader :: Stan -> IO Bool
 inputReader currentState = do
           str <- getLine
-          case str of
-            "q" -> return False
-            "l" -> do
-                listFiles
-                displayGame currentState
-                inputReader currentState
-            "7" -> do
-                putStrLn "góra+lewo"
-                displayGame (updateState currentState 7)
-                inputReader (updateState currentState 7)
-            "9" -> do
-                putStrLn "góra+prawo"
-                displayGame (updateState currentState 9)
-                inputReader (updateState currentState 9)
-            "1" -> do
-                putStrLn "dół+lewo"
-                displayGame (updateState currentState 1)
-                inputReader (updateState currentState 1)
-            "3" -> do
-                putStrLn "dół+prawo"
-                displayGame (updateState currentState 3)
-                inputReader (updateState currentState 3)
-            "n" -> do
-                putStrLn "nowa gra"
-                displayGame initialState
-                inputReader initialState
-            otherwise -> do
-              putStrLn "Niepoprawna komenda."
-              displayGame currentState
-              inputReader currentState
+          result <- saveStan currentState str
+          if result then do
+                  displayGame currentState
+                  inputReader currentState
+          else do
+                  (currentState,loaded) <- loadStan currentState str
+                  if loaded then do
+                      displayGame currentState
+                      inputReader currentState
+                  else do
+                      case str of
+                        "q" -> return False
+                        "l" -> do
+                            listFiles
+                            displayGame currentState
+                            inputReader currentState
+                        "7" -> do
+                            putStrLn "góra+lewo"
+                            displayGame (updateState currentState 7)
+                            inputReader (updateState currentState 7)
+                        "9" -> do
+                            putStrLn "góra+prawo"
+                            displayGame (updateState currentState 9)
+                            inputReader (updateState currentState 9)
+                        "1" -> do
+                            putStrLn "dół+lewo"
+                            displayGame (updateState currentState 1)
+                            inputReader (updateState currentState 1)
+                        "3" -> do
+                            putStrLn "dół+prawo"
+                            displayGame (updateState currentState 3)
+                            inputReader (updateState currentState 3)
+                        "n" -> do
+                            putStrLn "nowa gra"
+                            displayGame initialState
+                            inputReader initialState
+                        otherwise -> do
+                          putStrLn "Niepoprawna komenda."
+                          displayGame currentState
+                          inputReader currentState
+
+saveStan :: Stan -> String -> IO Bool
+saveStan s a = do let tokens = words a
+                  if head tokens == "z" then do
+                      save s (tokens !! 1)
+                      putStrLn "Zapis udany!"
+                      return True
+                  else
+                      return False
+
+loadStan :: Stan -> String -> IO (Stan,Bool)
+loadStan s a = do let tokens = words a
+                  if head tokens == "o" then do
+                      ns <- try ( load (tokens !! 1)) :: IO (Either SomeException Stan)
+                      case ns of
+                        Right stan -> do putStrLn "Odczyt udany!"
+                                         return (stan,True)
+                        Left e -> do putStrLn "Odczyt nieudany!!!"
+                                     return (s,False)
+                  else
+                      return (s,False)
 
 save :: Stan -> File_Path -> IO ()
 save zs f = writeFile f (show zs)
