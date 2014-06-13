@@ -21,6 +21,19 @@ printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo 
 printOptions::IO()
 printOptions = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie plikow w bierzacym katalogu \n q - koniec gry"
 
+printWin::IO()
+printWin = do putStr "\n============================================"
+              putStr "\n|                GRATULACJE                |"
+              putStr "\n|                WILK WYGRAŁ               |"
+              putStr "\n============================================"
+
+printLose::IO()
+printLose = do putStr "\n============================================"
+               putStr "\n|                KONIEC GRY                |"
+               putStr "\n|               OWCE WYGRAŁY               |"
+               putStr "\n============================================"
+
+
 printedBoard::Board -> String
 printedBoard = unlines . map(concatMap printSquare)
 
@@ -77,8 +90,6 @@ isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
                       else
                         False
 
-
-
 emptyBoard::Board
 
 --initialBoard::Board 
@@ -128,46 +139,54 @@ displayGame a = do printOptions
 inputReader :: Stan -> IO Bool
 inputReader currentState = do
           str <- getLine
-          result <- saveStan currentState str
-          if result then do
-                  displayGame currentState
-                  inputReader currentState
+          if (czyWilkWygrywa currentState) then do printWin
+                                                   displayGame initialState
+                                                   inputReader initialState
+          else if czyOwceWygrywaja currentState then
+               do printLose
+                  displayGame initialState
+                  inputReader initialState
           else do
-                  (currentState,loaded) <- loadStan currentState str
-                  if loaded then do
-                      displayGame currentState
-                      inputReader currentState
-                  else do
-                      case str of
-                        "q" -> return False
-                        "l" -> do
-                            listFiles
-                            displayGame currentState
-                            inputReader currentState
-                        "7" -> do
-                            putStrLn "góra+lewo"
-                            displayGame (updateState currentState 7)
-                            inputReader (updateState currentState 7)
-                        "9" -> do
-                            putStrLn "góra+prawo"
-                            displayGame (updateState currentState 9)
-                            inputReader (updateState currentState 9)
-                        "1" -> do
-                            putStrLn "dół+lewo"
-                            displayGame (updateState currentState 1)
-                            inputReader (updateState currentState 1)
-                        "3" -> do
-                            putStrLn "dół+prawo"
-                            displayGame (updateState currentState 3)
-                            inputReader (updateState currentState 3)
-                        "n" -> do
-                            putStrLn "nowa gra"
-                            displayGame initialState
-                            inputReader initialState
-                        otherwise -> do
-                          putStrLn "Niepoprawna komenda."
+                  result <- saveStan currentState str
+                  if result then do
                           displayGame currentState
                           inputReader currentState
+                  else do
+                          (currentState,loaded) <- loadStan currentState str
+                          if loaded then do
+                              displayGame currentState
+                              inputReader currentState
+                          else do
+                              case str of
+                                "q" -> return False
+                                "l" -> do
+                                    listFiles
+                                    displayGame currentState
+                                    inputReader currentState
+                                "7" -> do
+                                    putStrLn "góra+lewo"
+                                    displayGame (updateState currentState 7)
+                                    inputReader (updateState currentState 7)
+                                "9" -> do
+                                    putStrLn "góra+prawo"
+                                    displayGame (updateState currentState 9)
+                                    inputReader (updateState currentState 9)
+                                "1" -> do
+                                    putStrLn "dół+lewo"
+                                    displayGame (updateState currentState 1)
+                                    inputReader (updateState currentState 1)
+                                "3" -> do
+                                    putStrLn "dół+prawo"
+                                    displayGame (updateState currentState 3)
+                                    inputReader (updateState currentState 3)
+                                "n" -> do
+                                    putStrLn "nowa gra"
+                                    displayGame initialState
+                                    inputReader initialState
+                                otherwise -> do
+                                  putStrLn "Niepoprawna komenda."
+                                  displayGame currentState
+                                  inputReader currentState
 
 saveStan :: Stan -> String -> IO Bool
 saveStan s a = do let tokens = words a
@@ -211,7 +230,7 @@ insertStateToBoard a = setPiecesOnBoard a emptyBoard
 
 
 czyWilkWygrywa :: Stan -> Bool
-czyWilkWygrywa (x:xs) = do if snd x == 0 then True else False
+czyWilkWygrywa (x:xs) = do if fst x == 0 then True else False
 
 czyOwceWygrywaja :: Stan -> Bool
 czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
