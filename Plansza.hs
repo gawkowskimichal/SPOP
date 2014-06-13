@@ -103,7 +103,32 @@ emptyBoard::Board
                 [Just (Piece Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
 --}
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
-initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
+--initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
+
+askForInitialState :: IO Stan
+askForInitialState = do putStrLn "Podaj liczbe [0-7] oznaczajaca poczatkowa pozycje Wilka"
+                        input <- getLine
+                        case input of
+                          "0" -> do let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "1" -> do let initialState = [(7,1), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "2" -> do let initialState = [(7,2), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "3" -> do let initialState = [(7,3), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "4" -> do let initialState = [(7,4), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "5" -> do let initialState = [(7,5), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "6" -> do let initialState = [(7,6), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          "7" -> do let initialState = [(7,7), (0,1), (0,3), (0,5), (0,7)]
+                                    return initialState
+                          otherwise -> do putStrLn "Nieprawidlowa opcja, wybrano wariant domyslny"
+                                          let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
+                                          return initialState
+
 
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
@@ -128,9 +153,10 @@ updateState (s:state) move = case move of
 getEmptyBoard :: Board
 getEmptyBoard = emptyBoard
 
+{--
 getInitialState :: Stan
 getInitialState = initialState
-
+--}
 displayGame :: Stan -> IO()
 displayGame a = do printOptions
                    printInterface
@@ -140,12 +166,14 @@ inputReader :: Stan -> IO Bool
 inputReader currentState = do
           str <- getLine
           if (czyWilkWygrywa currentState) then do printWin
-                                                   displayGame initialState
-                                                   inputReader initialState
+                                                   state <- askForInitialState
+                                                   displayGame state
+                                                   inputReader state
           else if czyOwceWygrywaja currentState then
                do printLose
-                  displayGame initialState
-                  inputReader initialState
+                  state <- askForInitialState
+                  displayGame state
+                  inputReader state
           else do
                   result <- saveStan currentState str
                   if result then do
@@ -181,8 +209,9 @@ inputReader currentState = do
                                     inputReader (updateState currentState 3)
                                 "n" -> do
                                     putStrLn "nowa gra"
-                                    displayGame initialState
-                                    inputReader initialState
+                                    state <- askForInitialState
+                                    displayGame state
+                                    inputReader state
                                 otherwise -> do
                                   putStrLn "Niepoprawna komenda."
                                   displayGame currentState
