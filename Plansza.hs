@@ -303,5 +303,15 @@ generujDrzewo :: Int -> Stan -> DrzewoStanow
 generujDrzewo 0 stanGry = DrzewoStanow stanGry []
 generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry []
                                     else DrzewoStanow stanGry (map (generujDrzewo (glebokosc - 1)) ((generujNastepnyPoziom stanGry ((mod (glebokosc - 1) 2)))))
+ewaluujStany :: [Stan] -> [(Stan,Int)]
+ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
+						
+isMax :: Int -> [Int] -> Bool
+isMax a b = if a == maximum b then True else False
 
+sameWyniki :: [(Stan, Int)] -> [Int]
+sameWyniki a = [snd x | x <- a]
 
+wybierzNajlepszyRuch ::[(Stan,Int)] -> Stan
+wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs 
+						
