@@ -103,24 +103,16 @@ emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 --initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 askForInitialState :: IO Stan
-askForInitialState = do putStrLn "Podaj liczbe [0-7] oznaczajaca poczatkowa pozycje Wilka"
+askForInitialState = do putStrLn "Podaj liczbe 0, 2, 4, 6 oznaczajaca poczatkowa pozycje Wilka"
                         input <- getLine
                         case input of
                           "0" -> do let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
                                     return initialState
-                          "1" -> do let initialState = [(7,1), (0,1), (0,3), (0,5), (0,7)]
-                                    return initialState
                           "2" -> do let initialState = [(7,2), (0,1), (0,3), (0,5), (0,7)]
-                                    return initialState
-                          "3" -> do let initialState = [(7,3), (0,1), (0,3), (0,5), (0,7)]
                                     return initialState
                           "4" -> do let initialState = [(7,4), (0,1), (0,3), (0,5), (0,7)]
                                     return initialState
-                          "5" -> do let initialState = [(7,5), (0,1), (0,3), (0,5), (0,7)]
-                                    return initialState
                           "6" -> do let initialState = [(7,6), (0,1), (0,3), (0,5), (0,7)]
-                                    return initialState
-                          "7" -> do let initialState = [(7,7), (0,1), (0,3), (0,5), (0,7)]
                                     return initialState
                           otherwise -> do putStrLn "Nieprawidlowa opcja, wybrano wariant domyslny"
                                           let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
@@ -267,12 +259,12 @@ czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                               else True
 
 bliskoscWilkaDoZagrody :: Stan -> Int
-bliskoscWilkaDoZagrody (x:xs) = 7 - fst x							  
-							  
+bliskoscWilkaDoZagrody (x:xs) = 7 - fst x							
+							
 bliskoscOwiecDoWilka :: Stan -> Int
 bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (xs!!0))
 						- abs (fst x - fst (xs!!1)) - abs (snd x - snd (xs!!1))
-						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2)) 
+						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2))
 						- abs (fst x - fst (xs!!3)) - abs (snd x - snd (xs!!3))
 
 ocenStanWilka :: Stan -> Int
