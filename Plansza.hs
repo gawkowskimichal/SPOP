@@ -271,4 +271,11 @@ ocenStanWilka :: Stan -> Int
 ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody a) + 1 * (bliskoscOwiecDoWilka a)						
 --mozliweRuchyOwiec :: Stan -> [Stan]
 
---mozliweRuchyWilka :: Stan -> [Stan]
+nastepneStanyWilka :: Stan -> [Pos]
+nastepneStanyWilka (x:xs) = [(fst x - 1, snd x - 1),(fst x - 1, snd x + 1), (fst x + 1, snd x - 1), (fst x + 1, snd x + 1)]
+
+mozliweRuchyWilka :: Stan -> [Pos]
+mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), isValidMove (fst z) (snd z) xs]
+
+mozliweStanyWilka :: Stan -> [Stan]
+mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
