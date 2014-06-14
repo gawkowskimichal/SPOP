@@ -89,7 +89,7 @@ isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
 
 emptyBoard::Plansza
 
---initialBoard::Board 
+--initialBoard::Board
 {--initialBoard = [[Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca)],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
@@ -295,7 +295,7 @@ mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
 
 --generacja nastepnego stanu
 generujNastepnyPoziom :: Stan -> Int -> [Stan]
-generujNastepnyPoziom (x:xs) a = if a > 0 then mozliweStanyWilka (x:xs) else
+generujNastepnyPoziom (x:xs) a = if a == 0 then mozliweStanyWilka (x:xs) else
 								 mozliweRuchyOwiec (x:xs) xs
 								
 --generacja drzewa gry
@@ -303,6 +303,8 @@ generujDrzewo :: Int -> Stan -> DrzewoStanow
 generujDrzewo 0 stanGry = DrzewoStanow stanGry []
 generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry []
                                     else DrzewoStanow stanGry (map (generujDrzewo (glebokosc - 1)) ((generujNastepnyPoziom stanGry ((mod (glebokosc - 1) 2)))))
+
+
 ewaluujStany :: [Stan] -> [(Stan,Int)]
 ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
 						
@@ -316,8 +318,8 @@ sameWyniki :: [(Stan, Int)] -> [Int]
 sameWyniki a = [snd x | x <- a]
 
 wybierzNajlepszyRuch ::[(Stan,Int)] -> Stan
-wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs 
+wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
 wybierzNajgorszyRuch ::[(Stan,Int)] -> Stan
-wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs 
+wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 						
