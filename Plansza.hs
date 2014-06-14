@@ -284,4 +284,11 @@ mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s
 
 
 
---mozliweRuchyWilka :: Stan -> [Stan]
+nastepneStanyWilka :: Stan -> [Pos]
+nastepneStanyWilka (x:xs) = [(fst x - 1, snd x - 1),(fst x - 1, snd x + 1), (fst x + 1, snd x - 1), (fst x + 1, snd x + 1)]
+
+mozliweRuchyWilka :: Stan -> [Pos]
+mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), isValidMove (fst z) (snd z) xs]
+
+mozliweStanyWilka :: Stan -> [Stan]
+mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
