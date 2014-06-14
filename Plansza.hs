@@ -309,9 +309,15 @@ ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
 isMax :: Int -> [Int] -> Bool
 isMax a b = if a == maximum b then True else False
 
+isMin :: Int -> [Int] -> Bool
+isMin a b = if a == minimum b then True else False
+
 sameWyniki :: [(Stan, Int)] -> [Int]
 sameWyniki a = [snd x | x <- a]
 
 wybierzNajlepszyRuch ::[(Stan,Int)] -> Stan
 wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs 
+
+wybierzNajgorszyRuch ::[(Stan,Int)] -> Stan
+wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs 
 						
