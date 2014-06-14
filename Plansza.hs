@@ -13,7 +13,7 @@ type Plansza = [[Pole]]
 type Pos = (Int, Int)
 type Stan = [Pos]
 type File_Path = String
-data DrzewoStanow = DS {stan::Stan, subds::[DrzewoStanow]}
+data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow]}
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
@@ -295,6 +295,13 @@ mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
 
 --generacja nastepnego stanu
 generujNastepnyPoziom :: Stan -> Int -> [Stan]
-generujNastepnyPoziom (x:xs) a = if a > 0 then mozliweStanyWilka (x:xs) else 
+generujNastepnyPoziom (x:xs) a = if a > 0 then mozliweStanyWilka (x:xs) else
 								 mozliweRuchyOwiec (x:xs) xs
-						
+								
+--generacja drzewa gry
+generujDrzewo :: Int -> Stan -> DrzewoStanow
+generujDrzewo 0 stanGry = DrzewoStanow stanGry []
+generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry []
+                                    else DrzewoStanow stanGry (map (generujDrzewo (glebokosc - 1)) ((generujNastepnyPoziom stanGry ((mod (glebokosc - 1) 2)))))
+
+
