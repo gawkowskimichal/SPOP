@@ -292,3 +292,9 @@ mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), isV
 
 mozliweStanyWilka :: Stan -> [Stan]
 mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
+
+--generacja nastepnego stanu
+generujNastepnyPoziom :: Stan -> Int -> [Stan]
+generujNastepnyPoziom (x:xs) a = if a > 0 then mozliweStanyWilka (x:xs) else 
+								 mozliweRuchyOwiec (x:xs) xs
+						
