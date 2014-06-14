@@ -269,6 +269,19 @@ bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (
 
 ocenStanWilka :: Stan -> Int
 ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody a) + 1 * (bliskoscOwiecDoWilka a)						
---mozliweRuchyOwiec :: Stan -> [Stan]
+
+mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
+mozliweRuchyOwiec stanGry [] = []
+mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s + 1) stanGry
+                                                && isValidMove (fst s + 1) (snd s - 1) stanGry
+                                            then [(fst s + 1, snd s + 1)] : [(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
+                                                else if isValidMove (fst s + 1) (snd s + 1) stanGry
+                                                    then [(fst s + 1, snd s + 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
+                                                        else if isValidMove (fst s + 1) (snd s - 1) stanGry
+                                                            then [(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
+                                                                else mozliweRuchyOwiec stanGry polozenieOwiec
+
+
+
 
 --mozliweRuchyWilka :: Stan -> [Stan]
