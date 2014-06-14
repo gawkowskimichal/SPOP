@@ -322,4 +322,15 @@ wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x el
 
 wybierzNajgorszyRuch ::[(Stan,Int)] -> Stan
 wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
+
 						
+
+wybierzMinMax:: DrzewoStanow-> Int -> (Stan,Int)
+wybierzMinMax (DrzewoStanow  stan []) _ =  (stan,(ocenStanWilka stan))
+wybierzMinMax (DrzewoStanow  stan ds) 0 =  (wybierzNajgorszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax 1) ds)))                                                   
+wybierzMinMax (DrzewoStanow  stan ds) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
+												  else (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds))) 
+
+pogonOwce :: Stan -> Stan
+pogonOwce a = fst (wybierzMinMax (generujDrzewo 10 a) 8)
+												  
