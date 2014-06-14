@@ -266,6 +266,17 @@ czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                                      False
                               else True
 
+bliskoscWilkaDoZagrody :: Stan -> Int
+bliskoscWilkaDoZagrody (x:xs) = 7 - fst x							  
 							  
+bliskoscOwiecDoWilka :: Stan -> Int
+bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (xs!!0))
+						- abs (fst x - fst (xs!!1)) - abs (snd x - snd (xs!!1))
+						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2)) 
+						- abs (fst x - fst (xs!!3)) - abs (snd x - snd (xs!!3))
 
+ocenStanWilka :: Stan -> Int
+ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody a) + 1 * (bliskoscOwiecDoWilka a)						
+--mozliweRuchyOwiec :: Stan -> [Stan]
 
+--mozliweRuchyWilka :: Stan -> [Stan]
