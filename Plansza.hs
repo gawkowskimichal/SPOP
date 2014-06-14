@@ -5,15 +5,15 @@ import System.Directory
 import Data.Char
 import Control.Exception
 
-data Piece = Piece PieceType deriving Eq
-data PieceType = Owca | Wilk deriving Eq
-type Square = Maybe Piece
-type Board = [[Square]]
+-- Podstawowe typy
+data Bierka = Bierka TypBierki deriving Eq
+data TypBierki = Owca | Wilk deriving Eq
+type Pole = Maybe Bierka
+type Plansza = [[Pole]]
 type Pos = (Int, Int)
 type Stan = [Pos]
---data Gra = NowaGra (Board, Stan)
 type File_Path = String
-data Parser a = P (String -> [(a, String)])
+data DrzewoStanow = DS {stan::Stan, subds::[DrzewoStanow]}
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
@@ -34,42 +34,39 @@ printLose = do putStr "\n============================================"
                putStr "\n============================================"
 
 
-printedBoard::Board -> String
-printedBoard = unlines . map(concatMap printSquare)
+printedBoard::Plansza -> String
+printedBoard = unlines . map(concatMap printPole)
 
-printBoard::Board -> IO()
+printBoard::Plansza -> IO()
 printBoard a = putStr (printedBoard (a))
 
-printSquare::Square-> String
-printSquare Nothing = "| --- |"
-printSquare (Just (Piece a)) = "|  " ++ show (a) ++ "  |"
+printPole::Pole-> String
+printPole Nothing = "| --- |"
+printPole (Just (Bierka a)) = "|  " ++ show (a) ++ "  |"
 
-instance Show PieceType where
+instance Show TypBierki where
  show Owca = "O"
  show Wilk = "W"
 
---isEmpty::Board-> Pos-> Bool
---isEmpty board pos = Nothing == getSquare board pos
+emptyPole::Pole
+emptyPole = Nothing
 
-emptySquare::Square
-emptySquare = Nothing
+getPole::Plansza-> Pos-> Pole
+getPole board (a, b) = board!!a!!b
 
-getSquare::Board-> Pos-> Square
-getSquare board (a, b) = board!!a!!b
-
-updateBoard::Pos-> Square-> Board-> Board
+updateBoard::Pos-> Pole-> Plansza-> Plansza
 updateBoard = updateMatrix
 
-deleteSquare::Pos-> Board-> Board
-deleteSquare p = updateBoard p emptySquare
+deletePole::Pos-> Plansza-> Plansza
+deletePole p = updateBoard p emptyPole
 
 --movePos::Pos-> Pos-> Board-> Board
---movePos p1 p2 b = updateBoard p2 (getSquare b p1) (deleteSquare p1 b)
+--movePos p1 p2 b = updateBoard p2 (getPole b p1) (deletePole p1 b)
 
-setPieceOnBoard::PieceType -> Pos -> Board -> Board
-setPieceOnBoard piece pos b = updateBoard pos (Just (Piece piece)) b
+setPieceOnBoard::TypBierki -> Pos -> Plansza -> Plansza
+setPieceOnBoard piece pos b = updateBoard pos (Just (Bierka piece)) b
 
-setPiecesOnBoard::Stan -> Board -> Board
+setPiecesOnBoard::Stan -> Plansza -> Plansza
 setPiecesOnBoard a b = setPieceOnBoard Owca (a!!4) (setPieceOnBoard Owca (a!!3) (setPieceOnBoard Owca (a!!2) (setPieceOnBoard Owca (a!!1) (setPieceOnBoard Wilk (head a) b))))
 
 updateList::[a]-> Int-> (a-> a)-> [a]
@@ -90,17 +87,17 @@ isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
                       else
                         False
 
-emptyBoard::Board
+emptyBoard::Plansza
 
 --initialBoard::Board 
-{--initialBoard = [[Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca), Nothing, Just (Piece Owca)],
+{--initialBoard = [[Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca)],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
                 [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Just (Piece Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
+                [Just (Bierka Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
 --}
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 --initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
@@ -150,7 +147,7 @@ updateState (s:state) move = case move of
                                         s:state
 
 
-getEmptyBoard :: Board
+getEmptyBoard :: Plansza
 getEmptyBoard = emptyBoard
 
 {--
@@ -254,7 +251,7 @@ listFiles = do
 
 --initialGame = NowaGra( initialBoard, initialState )
 
-insertStateToBoard :: Stan -> Board
+insertStateToBoard :: Stan -> Plansza
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
 
 
@@ -268,3 +265,7 @@ czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                                      || isValidMove (fst s + 1) (snd s + 1) state then
                                      False
                               else True
+
+							  
+
+
