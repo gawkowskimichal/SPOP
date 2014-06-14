@@ -182,20 +182,20 @@ inputReader currentState = do
                                     inputReader currentState
                                 "7" -> do
                                     putStrLn "góra+lewo"
-                                    displayGame (updateState currentState 7)
-                                    inputReader (updateState currentState 7)
+                                    displayGame (pogonOwce (updateState currentState 7))
+                                    inputReader (pogonOwce (updateState currentState 7))
                                 "9" -> do
                                     putStrLn "góra+prawo"
-                                    displayGame (updateState currentState 9)
-                                    inputReader (updateState currentState 9)
+                                    displayGame (pogonOwce (updateState currentState 9))
+                                    inputReader (pogonOwce (updateState currentState 9))
                                 "1" -> do
                                     putStrLn "dół+lewo"
-                                    displayGame (updateState currentState 1)
-                                    inputReader (updateState currentState 1)
+                                    displayGame (pogonOwce (updateState currentState 1))
+                                    inputReader (pogonOwce (updateState currentState 1))
                                 "3" -> do
                                     putStrLn "dół+prawo"
-                                    displayGame (updateState currentState 3)
-                                    inputReader (updateState currentState 3)
+                                    displayGame (pogonOwce (updateState currentState 3))
+                                    inputReader (pogonOwce (updateState currentState 3))
                                 "n" -> do
                                     putStrLn "nowa gra"
                                     state <- askForInitialState
@@ -306,6 +306,7 @@ generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa 
 
 
 ewaluujStany :: [Stan] -> [(Stan,Int)]
+ewaluujStany [] = [([(0,0),(0,0),(0,0),(0,0),(0,0)], -999999999)]
 ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
 						
 isMax :: Int -> [Int] -> Bool
@@ -326,11 +327,11 @@ wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x el
 						
 
 wybierzMinMax:: DrzewoStanow-> Int -> (Stan,Int)
-wybierzMinMax (DrzewoStanow  stan []) _ =  (stan,(ocenStanWilka stan))
-wybierzMinMax (DrzewoStanow  stan ds) 0 =  (wybierzNajgorszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax 1) ds)))                                                   
-wybierzMinMax (DrzewoStanow  stan ds) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
-												  else (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds))) 
+wybierzMinMax (DrzewoStanow  stan []) _ = (stan,(ocenStanWilka stan))
+wybierzMinMax (DrzewoStanow  stan ds) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))                                                   
+wybierzMinMax (DrzewoStanow  stan ds) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
+													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds))) 
 
 pogonOwce :: Stan -> Stan
-pogonOwce a = fst (wybierzMinMax (generujDrzewo 10 a) 8)
+pogonOwce a = fst (wybierzMinMax (generujDrzewo 1 a) 0)
 												  
