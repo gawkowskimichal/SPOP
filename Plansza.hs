@@ -318,16 +318,23 @@ czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                               else True
 
 bliskoscWilkaDoZagrody :: Stan -> Int
-bliskoscWilkaDoZagrody (x:xs) = 7 - fst x							
+bliskoscWilkaDoZagrody (x:xs) =  7 - fst x							
 							
 bliskoscOwiecDoWilka :: Stan -> Int
 bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (xs!!0))
 						- abs (fst x - fst (xs!!1)) - abs (snd x - snd (xs!!1))
 						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2))
 						- abs (fst x - fst (xs!!3)) - abs (snd x - snd (xs!!3))
+rozstrzalOwiec :: Stan -> Int
+rozstrzalOwiec (x:xs) = 0 - (abs (fst (xs!!0) - fst (xs!!1))
+                                + abs (fst (xs!!0) - fst (xs!!2))
+                                + abs (fst (xs!!0) - fst (xs!!3))
+                                + abs (fst (xs!!1) - fst (xs!!2))
+                                + abs (fst (xs!!1) - fst (xs!!3))
+                                + abs (fst (xs!!2) - fst (xs!!3)))
 
 ocenStanWilka :: (Stan,[Stan]) -> Int
-ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody (fst a)) + 1 * (bliskoscOwiecDoWilka (fst a))						
+ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody (fst a)) + 1 * (bliskoscOwiecDoWilka (fst a))	 + 4 * (rozstrzalOwiec (fst a))					
 
 mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
 mozliweRuchyOwiec stanGry [] = []
@@ -386,9 +393,9 @@ wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x el
 
 wybierzMinMax:: DrzewoStanow-> Int -> ((Stan,[Stan]),Int)
 wybierzMinMax (DrzewoStanow  stan [] sciezka) _ = ((stan,sciezka),(ocenStanWilka (stan,sciezka)))
-wybierzMinMax (DrzewoStanow  stan ds sciezka) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))
-wybierzMinMax (DrzewoStanow  stan ds sciezka) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
-													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
+wybierzMinMax (DrzewoStanow  stan ds sciezka) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (stan,sciezka))
+wybierzMinMax (DrzewoStanow  stan ds sciezka) glebokosc = if mod glebokosc 2 == 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (stan,sciezka))
+													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (stan,sciezka))
 
 pogonOwce :: Stan -> Stan
 pogonOwce a =(snd (fst (wybierzMinMax (generujDrzewo [] 5 a) 0)))!!1
