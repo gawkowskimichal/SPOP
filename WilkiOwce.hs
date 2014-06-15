@@ -11,8 +11,8 @@ data Bierka = Bierka TypBierki deriving Eq
 data TypBierki = Owca | Wilk deriving Eq
 type Pole = Maybe Bierka
 type Plansza = [[Pole]]
-type Pos = (Int, Int)
-type Stan = [Pos]
+type Pozycja = (Int, Int)
+type Stan = [Pozycja]
 type File_Path = String
 data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow], sciezka::[Stan]} deriving Show
 
@@ -27,11 +27,11 @@ main = do
                   return()
 
 --
-printInterface::IO()
-printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
+wyswietlInterfejs::IO()
+wyswietlInterfejs = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
 
-printOptions::IO()
-printOptions = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie plikow w bierzacym katalogu \n q - koniec gry"
+wyswietlOpcje::IO()
+wyswietlOpcje = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie plikow w bierzacym katalogu \n q - koniec gry"
 
 printWin::IO()
 printWin = do putStr "\n============================================"
@@ -63,16 +63,16 @@ instance Show TypBierki where
 emptyPole::Pole
 emptyPole = Nothing
 
-getPole::Plansza-> Pos-> Pole
+getPole::Plansza-> Pozycja-> Pole
 getPole board (a, b) = board!!a!!b
 
-updateBoard::Pos-> Pole-> Plansza-> Plansza
+updateBoard::Pozycja-> Pole-> Plansza-> Plansza
 updateBoard = updateMatrix
 
-deletePole::Pos-> Plansza-> Plansza
+deletePole::Pozycja-> Plansza-> Plansza
 deletePole p = updateBoard p emptyPole
 
-setPieceOnBoard::TypBierki -> Pos -> Plansza -> Plansza
+setPieceOnBoard::TypBierki -> Pozycja -> Plansza -> Plansza
 setPieceOnBoard piece pos b = updateBoard pos (Just (Bierka piece)) b
 
 setPiecesOnBoard::Stan -> Plansza -> Plansza
@@ -86,14 +86,13 @@ updateList (x:xs) n f = x:updateList xs (n-1) f
 updateMatrix::(Int, Int)-> a-> [[a]]-> [[a]]
 updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 
-isValidMove :: Int -> Int -> [(Int,Int)]-> Bool
-isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
+czyRuchPoprawny :: Int -> Int -> [(Int,Int)]-> Bool
+czyRuchPoprawny row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
                         not (elem (row, col) sheep)
                       else
                         False
 
 emptyBoard::Plansza
-
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 
 --funkcja pozwalajacą użytkownikowi na ustalenie początkowego położenia wilka
@@ -115,21 +114,21 @@ askForInitialState = do putStrLn ""
                                           return initialState
 
 --funkcja aktualizująca położenie pionów na planszy
-updateState :: [(Int, Int)] -> Int -> ([(Int, Int)],Bool)
-updateState (s:state) move = case move of
-                                 7 -> if isValidMove (fst s - 1) (snd s - 1) state then
+aktualizujStan :: [(Int, Int)] -> Int -> ([(Int, Int)],Bool)
+aktualizujStan (s:state) move = case move of
+                                 7 -> if czyRuchPoprawny (fst s - 1) (snd s - 1) state then
                                         ([(fst s - 1,snd s - 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
                                         (s:state,False)
-                                 9 -> if isValidMove (fst s - 1) (snd s + 1) state then
+                                 9 -> if czyRuchPoprawny (fst s - 1) (snd s + 1) state then
                                         ([((fst s) - 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
                                         (s:state,False)
-                                 1 -> if isValidMove (fst s + 1) (snd s - 1) state then
+                                 1 -> if czyRuchPoprawny (fst s + 1) (snd s - 1) state then
                                         ([((fst s) + 1,(snd s) - 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
                                         (s:state,False)
-                                 3 -> if isValidMove (fst s + 1) (snd s + 1) state then
+                                 3 -> if czyRuchPoprawny (fst s + 1) (snd s + 1) state then
                                         ([((fst s) + 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
                                         (s:state,False)
@@ -139,8 +138,8 @@ getEmptyBoard :: Plansza
 getEmptyBoard = emptyBoard
 
 displayGame :: Stan -> IO()
-displayGame a = do printOptions
-                   printInterface
+displayGame a = do wyswietlOpcje
+                   wyswietlInterfejs
                    printBoard (insertStateToBoard a)
 
 --funkcja obsługująca komendy podawane na wejście programu
@@ -157,12 +156,12 @@ inputReader currentState = do
                   displayGame state
                   inputReader state
           else do
-                  result <- saveStan currentState str
+                  result <- zapiszStan currentState str
                   if result then do
                           displayGame currentState
                           inputReader currentState
                   else do
-                          (currentState,loaded) <- loadStan currentState str
+                          (currentState,loaded) <- wczytajStan currentState str
                           if loaded then do
                               displayGame currentState
                               inputReader currentState
@@ -170,12 +169,12 @@ inputReader currentState = do
                               case str of
                                 "q" -> return False
                                 "l" -> do
-                                    listFiles
+                                    wyswietlPliki
                                     displayGame currentState
                                     inputReader currentState
                                 "7" -> do
                                     putStrLn "góra+lewo"
-                                    let (new_state,zmien) = updateState currentState 7
+                                    let (new_state,zmien) = aktualizujStan currentState 7
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -197,7 +196,7 @@ inputReader currentState = do
                                     inputReader new_state
                                 "9" -> do
                                     putStrLn "góra+prawo"
-                                    let (new_state,zmien) = updateState currentState 9
+                                    let (new_state,zmien) = aktualizujStan currentState 9
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -219,7 +218,7 @@ inputReader currentState = do
                                     inputReader new_state
                                 "1" -> do
                                     putStrLn "dół+lewo"
-                                    let (new_state,zmien) = updateState currentState 1
+                                    let (new_state,zmien) = aktualizujStan currentState 1
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -241,7 +240,7 @@ inputReader currentState = do
                                     inputReader new_state
                                 "3" -> do
                                     putStrLn "dół+prawo"
-                                    let (new_state,zmien) = updateState currentState 3
+                                    let (new_state,zmien) = aktualizujStan currentState 3
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -272,21 +271,21 @@ inputReader currentState = do
                                   inputReader currentState
 
 --funkcja realizująca zapis aktualnego stanu gry do pliku
-saveStan :: Stan -> String -> IO Bool
-saveStan s a = if null a || length a < 2 then return False else do
+zapiszStan :: Stan -> String -> IO Bool
+zapiszStan s a = if null a || length a < 2 then return False else do
                                                       let tokens = words a
                                                       if head tokens == "z" then do
-                                                          save s (tokens !! 1)
+                                                          zapisz s (tokens !! 1)
                                                           putStrLn "Zapis udany!"
                                                           return True
                                                       else
                                                           return False
 --funkcja realizująca odczyt aktualnego stanu gry z pliku
-loadStan :: Stan -> String -> IO (Stan,Bool)
-loadStan s a = if null a || length a < 2 then return (s,False) else do
+wczytajStan :: Stan -> String -> IO (Stan,Bool)
+wczytajStan s a = if null a || length a < 2 then return (s,False) else do
                                                       let tokens = words a
                                                       if head tokens == "o" then do
-                                                          ns <- try ( load (tokens !! 1)) :: IO (Either SomeException Stan)
+                                                          ns <- try ( wczytaj (tokens !! 1)) :: IO (Either SomeException Stan)
                                                           case ns of
                                                             Right stan -> do putStrLn "Odczyt udany!"
                                                                              return (stan,True)
@@ -294,18 +293,18 @@ loadStan s a = if null a || length a < 2 then return (s,False) else do
                                                                          return (s,False)
                                                       else
                                                           return (s,False)
---
-save :: Stan -> File_Path -> IO ()
-save zs f = writeFile f (show zs)
 
-load :: File_Path -> IO Stan
-load f = do
+zapisz :: Stan -> File_Path -> IO ()
+zapisz zs f = writeFile f (show zs)
+
+wczytaj :: File_Path -> IO Stan
+wczytaj f = do
          s <- readFile f
          return (read s)
 
 --funkcja wyświetlająca zawartość bieżącego katalogu
-listFiles :: IO()
-listFiles = do
+wyswietlPliki :: IO()
+wyswietlPliki = do
         cd <- getCurrentDirectory
         files <- getDirectoryContents cd
         print files
@@ -319,10 +318,10 @@ czyWilkWygrywa (x:xs) = do if fst x == 0 then True else False
 
 --funkcja sprawdzająca czy partię wygrały owce
 czyOwceWygrywaja :: Stan -> Bool
-czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
-                                     || isValidMove (fst s - 1) (snd s + 1) state
-                                     || isValidMove (fst s + 1) (snd s - 1) state
-                                     || isValidMove (fst s + 1) (snd s + 1) state then
+czyOwceWygrywaja (s:state) =  if czyRuchPoprawny (fst s - 1) (snd s - 1) state
+                                     || czyRuchPoprawny (fst s - 1) (snd s + 1) state
+                                     || czyRuchPoprawny (fst s + 1) (snd s - 1) state
+                                     || czyRuchPoprawny (fst s + 1) (snd s + 1) state then
                                      False
                               else True
 
@@ -352,12 +351,12 @@ ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody (fst a)) + 1 * (bliskoscOwiecDoWil
 --funkcja określająca jakie ruchy mogą wykonać owce w danym posunięciu
 mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
 mozliweRuchyOwiec stanGry [] = []
-mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s + 1) stanGry
-                                                && isValidMove (fst s + 1) (snd s - 1) stanGry
+mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if czyRuchPoprawny (fst s + 1) (snd s + 1) stanGry
+                                                && czyRuchPoprawny (fst s + 1) (snd s - 1) stanGry
                                             then [(fst s + 1, snd s + 1),(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
-                                                else if isValidMove (fst s + 1) (snd s + 1) stanGry
+                                                else if czyRuchPoprawny (fst s + 1) (snd s + 1) stanGry
                                                     then [(fst s + 1, snd s + 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
-                                                        else if isValidMove (fst s + 1) (snd s - 1) stanGry
+                                                        else if czyRuchPoprawny (fst s + 1) (snd s - 1) stanGry
                                                             then [(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
                                                                 else [] : mozliweRuchyOwiec stanGry polozenieOwiec
 															
@@ -368,11 +367,11 @@ mozliweStanyOwiec (x:xs) = [[x]++[y]++[xs!!1]++[xs!!2]++[xs!!3] | y <- ((mozliwe
 						   ++ [[x]++[xs!!0]++[xs!!1]++[xs!!2]++[y] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 3)]
 
 
-nastepneStanyWilka :: Stan -> [Pos]
+nastepneStanyWilka :: Stan -> [Pozycja]
 nastepneStanyWilka (x:xs) = [(fst x - 1, snd x - 1),(fst x - 1, snd x + 1), (fst x + 1, snd x - 1), (fst x + 1, snd x + 1)]
 
-mozliweRuchyWilka :: Stan -> [Pos]
-mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), isValidMove (fst z) (snd z) xs]
+mozliweRuchyWilka :: Stan -> [Pozycja]
+mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), czyRuchPoprawny (fst z) (snd z) xs]
 
 mozliweStanyWilka :: Stan -> [Stan]
 mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
