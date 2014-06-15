@@ -120,24 +120,24 @@ askForInitialState = do putStrLn ""
                                           return initialState
 
 
-updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
+updateState :: [(Int, Int)] -> Int -> ([(Int, Int)],Bool)
 updateState (s:state) move = case move of
                                  7 -> if isValidMove (fst s - 1) (snd s - 1) state then
-                                        [(fst s - 1,snd s - 1), state!!0, state!!1, state!!2, state!!3]
+                                        ([(fst s - 1,snd s - 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
-                                        s:state
+                                        (s:state,False)
                                  9 -> if isValidMove (fst s - 1) (snd s + 1) state then
-                                        [((fst s) - 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3]
+                                        ([((fst s) - 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
-                                        s:state
+                                        (s:state,False)
                                  1 -> if isValidMove (fst s + 1) (snd s - 1) state then
-                                        [((fst s) + 1,(snd s) - 1), state!!0, state!!1, state!!2, state!!3]
+                                        ([((fst s) + 1,(snd s) - 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
-                                        s:state
+                                        (s:state,False)
                                  3 -> if isValidMove (fst s + 1) (snd s + 1) state then
-                                        [((fst s) + 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3]
+                                        ([((fst s) + 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3],True)
                                     else
-                                        s:state
+                                        (s:state,False)
 
 
 getEmptyBoard :: Plansza
@@ -183,7 +183,7 @@ inputReader currentState = do
                                     inputReader currentState
                                 "7" -> do
                                     putStrLn "góra+lewo"
-                                    let new_state = updateState currentState 7
+                                    let (new_state,zmien) = updateState currentState 7
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -196,12 +196,16 @@ inputReader currentState = do
                                               displayGame state
                                               inputReader state
                                     else do
+                                    if zmien then do
                                     let new_state2 = pogonOwce (new_state)
                                     displayGame new_state2
                                     inputReader new_state2
+                                    else do
+                                    displayGame new_state
+                                    inputReader new_state
                                 "9" -> do
                                     putStrLn "góra+prawo"
-                                    let new_state = updateState currentState 9
+                                    let (new_state,zmien) = updateState currentState 9
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -214,12 +218,16 @@ inputReader currentState = do
                                               displayGame state
                                               inputReader state
                                     else do
+                                    if zmien then do
                                     let new_state2 = pogonOwce (new_state)
                                     displayGame new_state2
                                     inputReader new_state2
+                                    else do
+                                    displayGame new_state
+                                    inputReader new_state
                                 "1" -> do
                                     putStrLn "dół+lewo"
-                                    let new_state = updateState currentState 1
+                                    let (new_state,zmien) = updateState currentState 1
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -232,12 +240,16 @@ inputReader currentState = do
                                               displayGame state
                                               inputReader state
                                     else do
+                                    if zmien then do
                                     let new_state2 = pogonOwce (new_state)
                                     displayGame new_state2
                                     inputReader new_state2
+                                    else do
+                                    displayGame new_state
+                                    inputReader new_state
                                 "3" -> do
                                     putStrLn "dół+prawo"
-                                    let new_state = updateState currentState 3
+                                    let (new_state,zmien) = updateState currentState 3
                                     putStrLn (show new_state)
                                     if (czyWilkWygrywa new_state) then do
                                                    printWin
@@ -250,9 +262,13 @@ inputReader currentState = do
                                               displayGame state
                                               inputReader state
                                     else do
+                                    if zmien then do
                                     let new_state2 = pogonOwce (new_state)
                                     displayGame new_state2
                                     inputReader new_state2
+                                    else do
+                                    displayGame new_state
+                                    inputReader new_state
                                 "n" -> do
                                     putStrLn "nowa gra"
                                     state <- askForInitialState
