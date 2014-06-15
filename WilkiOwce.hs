@@ -6,7 +6,7 @@ import System.Directory
 import Data.Char
 import Control.Exception
 
--- Wykorzystywane typy danych
+--wykorzystywane typy danych
 data Bierka = Bierka TypBierki deriving Eq
 data TypBierki = Owca | Wilk deriving Eq
 type Pole = Maybe Bierka
@@ -16,6 +16,7 @@ type Stan = [Pozycja]
 type File_Path = String
 data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow], sciezka::[Stan]} deriving Show
 
+--główna funkcja uruchamiająca program
 main :: IO ()
 main = do
          stanPoczatkowy <- askForInitialState
@@ -26,19 +27,22 @@ main = do
           else do putStrLn "Wyjscie"
                   return()
 
---
+--funkcja wyświetlająca instrukcje służące do sterowania wilkiem
 wyswietlInterfejs::IO()
 wyswietlInterfejs = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
 
+--funkcja wyświetlająca informacje o dodatkowych opcjach programu
 wyswietlOpcje::IO()
 wyswietlOpcje = putStr "\nPodaj opcję programu: n|z|o|l|q \n n - nowa gra \n z [nazwa_pliku] - zapis gry \n o [nazwa_pliku] - odczyt gry \n l - listowanie plikow w bierzacym katalogu \n q - koniec gry"
 
+--funkcja wyswietlajaca informacje o zwycięstwie wilka
 printWin::IO()
 printWin = do putStr "\n============================================"
               putStr "\n|                GRATULACJE                |"
               putStr "\n|                WILK WYGRAŁ               |"
               putStr "\n============================================"
 
+--funkcja wyswietlajaca informacje o zwycięstwie owiec              
 printLose::IO()
 printLose = do putStr "\n============================================"
                putStr "\n|                KONIEC GRY                |"
@@ -49,6 +53,7 @@ printLose = do putStr "\n============================================"
 printedBoard::Plansza -> String
 printedBoard = unlines . map(concatMap printPole)
 
+--funkcja wyswietlajaca planszę
 printBoard::Plansza -> IO()
 printBoard a = putStr (printedBoard (a))
 
@@ -86,6 +91,7 @@ updateList (x:xs) n f = x:updateList xs (n-1) f
 updateMatrix::(Int, Int)-> a-> [[a]]-> [[a]]
 updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 
+--funkcja określająca czy żądany ruch jest dopuszczalny
 czyRuchPoprawny :: Int -> Int -> [(Int,Int)]-> Bool
 czyRuchPoprawny row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
                         not (elem (row, col) sheep)
@@ -133,10 +139,7 @@ aktualizujStan (s:state) move = case move of
                                     else
                                         (s:state,False)
 
-
-getEmptyBoard :: Plansza
-getEmptyBoard = emptyBoard
-
+--funkcja realizująca interfejs użytkownika
 displayGame :: Stan -> IO()
 displayGame a = do wyswietlOpcje
                    wyswietlInterfejs
@@ -309,6 +312,7 @@ wyswietlPliki = do
         files <- getDirectoryContents cd
         print files
 
+--funkcja odpowiadajaca za przeniesienie aktualnego stanu rozgruwki na planszę
 insertStateToBoard :: Stan -> Plansza
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
 
@@ -370,6 +374,7 @@ mozliweStanyOwiec (x:xs) = [[x]++[y]++[xs!!1]++[xs!!2]++[xs!!3] | y <- ((mozliwe
 nastepneStanyWilka :: Stan -> [Pozycja]
 nastepneStanyWilka (x:xs) = [(fst x - 1, snd x - 1),(fst x - 1, snd x + 1), (fst x + 1, snd x - 1), (fst x + 1, snd x + 1)]
 
+--funkcja określająca jakie ruchy może wykonać wilk w danym posunięciu
 mozliweRuchyWilka :: Stan -> [Pozycja]
 mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), czyRuchPoprawny (fst z) (snd z) xs]
 
@@ -396,9 +401,11 @@ isMin a b = if a == minimum b then True else False
 sameWyniki :: [((Stan,[Stan]), Int)] -> [Int]
 sameWyniki a = [snd x | x <- a]
 
+--funkcja wykorzystywana w strategi minimaksowej do ewaluacji poszczególnych posunięć 
 wybierzNajlepszyRuch ::[((Stan,[Stan]),Int)] -> (Stan,[Stan])
 wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
+--funkcja wykorzystywana w strategi minimaksowej do ewaluacji poszczególnych posunięć 
 wybierzNajgorszyRuch ::[((Stan,[Stan]),Int)] -> (Stan,[Stan])
 wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
