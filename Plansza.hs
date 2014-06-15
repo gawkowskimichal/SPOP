@@ -122,19 +122,19 @@ askForInitialState = do putStrLn "Podaj liczbe 0, 2, 4, 6 oznaczajaca poczatkowa
 updateState :: [(Int, Int)] -> Int -> [(Int, Int)]
 updateState (s:state) move = case move of
                                  7 -> if isValidMove (fst s - 1) (snd s - 1) state then
-                                        [(fst s - 1,snd s - 1), (0,1), (0,3), (0,5), (0,7)]
+                                        [(fst s - 1,snd s - 1), state!!0, state!!1, state!!2, state!!3]
                                     else
                                         s:state
                                  9 -> if isValidMove (fst s - 1) (snd s + 1) state then
-                                        [((fst s) - 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
+                                        [((fst s) - 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3]
                                     else
                                         s:state
                                  1 -> if isValidMove (fst s + 1) (snd s - 1) state then
-                                        [((fst s) + 1,(snd s) - 1), (0,1), (0,3), (0,5), (0,7)]
+                                        [((fst s) + 1,(snd s) - 1), state!!0, state!!1, state!!2, state!!3]
                                     else
                                         s:state
                                  3 -> if isValidMove (fst s + 1) (snd s + 1) state then
-                                        [((fst s) + 1,(snd s) + 1), (0,1), (0,3), (0,5), (0,7)]
+                                        [((fst s) + 1,(snd s) + 1), state!!0, state!!1, state!!2, state!!3]
                                     else
                                         s:state
 
