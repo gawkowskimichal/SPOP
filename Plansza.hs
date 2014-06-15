@@ -274,14 +274,18 @@ mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
 mozliweRuchyOwiec stanGry [] = []
 mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s + 1) stanGry
                                                 && isValidMove (fst s + 1) (snd s - 1) stanGry
-                                            then [(fst s + 1, snd s + 1)] : [(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
+                                            then [(fst s + 1, snd s + 1),(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
                                                 else if isValidMove (fst s + 1) (snd s + 1) stanGry
                                                     then [(fst s + 1, snd s + 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
                                                         else if isValidMove (fst s + 1) (snd s - 1) stanGry
                                                             then [(fst s + 1, snd s - 1)] : mozliweRuchyOwiec stanGry polozenieOwiec
-                                                                else mozliweRuchyOwiec stanGry polozenieOwiec
-
-
+                                                                else [] : mozliweRuchyOwiec stanGry polozenieOwiec
+															
+mozliweStanyOwiec :: Stan -> [Stan]
+mozliweStanyOwiec (x:xs) = [[x]++[y]++[xs!!1]++[xs!!2]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 0)]
+						   ++ [[x]++[xs!!0]++[y]++[xs!!2]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 1)] 
+						   ++ [[x]++[xs!!0]++[xs!!1]++[y]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 2)] 
+						   ++ [[x]++[xs!!0]++[xs!!1]++[xs!!2]++[y] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 3)]
 
 
 nastepneStanyWilka :: Stan -> [Pos]
@@ -295,8 +299,8 @@ mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
 
 --generacja nastepnego stanu
 generujNastepnyPoziom :: Stan -> Int -> [Stan]
-generujNastepnyPoziom (x:xs) a = if a == 0 then mozliweStanyWilka (x:xs) else
-								 mozliweRuchyOwiec (x:xs) xs
+generujNastepnyPoziom (x:xs) a = if a == 1 then mozliweStanyWilka (x:xs) else
+								 mozliweStanyOwiec (x:xs)
 								
 --generacja drzewa gry
 generujDrzewo :: Int -> Stan -> DrzewoStanow
@@ -306,7 +310,6 @@ generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa 
 
 
 ewaluujStany :: [Stan] -> [(Stan,Int)]
-ewaluujStany [] = [([(0,0),(0,0),(0,0),(0,0),(0,0)], -999999999)]
 ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
 						
 isMax :: Int -> [Int] -> Bool
