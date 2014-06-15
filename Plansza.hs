@@ -13,7 +13,7 @@ type Plansza = [[Pole]]
 type Pos = (Int, Int)
 type Stan = [Pos]
 type File_Path = String
-data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow]}
+data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow], sciezka::[Stan]} deriving Show
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
@@ -269,8 +269,8 @@ bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (
 						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2))
 						- abs (fst x - fst (xs!!3)) - abs (snd x - snd (xs!!3))
 
-ocenStanWilka :: Stan -> Int
-ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody a) + 1 * (bliskoscOwiecDoWilka a)						
+ocenStanWilka :: (Stan,[Stan]) -> Int
+ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody (fst a)) + 1 * (bliskoscOwiecDoWilka (fst a))						
 
 mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
 mozliweRuchyOwiec stanGry [] = []
@@ -305,14 +305,10 @@ generujNastepnyPoziom (x:xs) a = if a == 1 then mozliweStanyWilka (x:xs) else
 								 mozliweStanyOwiec (x:xs)
 								
 --generacja drzewa gry
-generujDrzewo :: Int -> Stan -> DrzewoStanow
-generujDrzewo 0 stanGry = DrzewoStanow stanGry []
-generujDrzewo glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry []
-                                    else DrzewoStanow stanGry (map (generujDrzewo (glebokosc - 1)) ((generujNastepnyPoziom stanGry ((mod (glebokosc - 1) 2)))))
-
-
-ewaluujStany :: [Stan] -> [(Stan,Int)]
-ewaluujStany (x:xs) = (x, ocenStanWilka x) : ewaluujStany xs
+generujDrzewo :: [Stan] -> Int -> Stan  -> DrzewoStanow
+generujDrzewo sciezka 0 stanGry = DrzewoStanow stanGry [] (sciezka++[stanGry])
+generujDrzewo sciezka glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry [] (sciezka++[stanGry])
+                                    else DrzewoStanow stanGry (map (generujDrzewo (sciezka++[stanGry]) (glebokosc - 1)) ((generujNastepnyPoziom stanGry ((mod (glebokosc - 1) 2))))) (sciezka++[stanGry])
 						
 isMax :: Int -> [Int] -> Bool
 isMax a b = if a == maximum b then True else False
@@ -320,23 +316,23 @@ isMax a b = if a == maximum b then True else False
 isMin :: Int -> [Int] -> Bool
 isMin a b = if a == minimum b then True else False
 
-sameWyniki :: [(Stan, Int)] -> [Int]
+sameWyniki :: [((Stan,[Stan]), Int)] -> [Int]
 sameWyniki a = [snd x | x <- a]
 
-wybierzNajlepszyRuch ::[(Stan,Int)] -> Stan
+wybierzNajlepszyRuch ::[((Stan,[Stan]),Int)] -> (Stan,[Stan])
 wybierzNajlepszyRuch (x:xs) = if isMax (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
-wybierzNajgorszyRuch ::[(Stan,Int)] -> Stan
+wybierzNajgorszyRuch ::[((Stan,[Stan]),Int)] -> (Stan,[Stan])
 wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
 						
 
-wybierzMinMax:: DrzewoStanow-> Int -> (Stan,Int)
-wybierzMinMax (DrzewoStanow  stan []) _ = (stan,(ocenStanWilka stan))
-wybierzMinMax (DrzewoStanow  stan ds) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))
-wybierzMinMax (DrzewoStanow  stan ds) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
+wybierzMinMax:: DrzewoStanow-> Int -> ((Stan,[Stan]),Int)
+wybierzMinMax (DrzewoStanow  stan [] sciezka) _ = ((stan,sciezka),(ocenStanWilka (stan,sciezka)))
+wybierzMinMax (DrzewoStanow  stan ds sciezka) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))
+wybierzMinMax (DrzewoStanow  stan ds sciezka) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
 													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
 
 pogonOwce :: Stan -> Stan
-pogonOwce a = fst (wybierzMinMax (generujDrzewo 1 a) 0)
+pogonOwce a =(snd (fst (wybierzMinMax (generujDrzewo [] 5 a) 0)))!!1
 												
