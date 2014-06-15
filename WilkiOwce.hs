@@ -1,4 +1,4 @@
-module Plansza where
+module WilkiOwce where
 
 import System.IO
 import System.Directory
@@ -14,6 +14,17 @@ type Pos = (Int, Int)
 type Stan = [Pos]
 type File_Path = String
 data DrzewoStanow = DrzewoStanow {stan::Stan, subds::[DrzewoStanow], sciezka::[Stan]} deriving Show
+
+main :: IO ()
+main = do
+         stanPoczatkowy <- askForInitialState
+         displayGame stanPoczatkowy
+         fun <- inputReader stanPoczatkowy
+         if fun
+          then putStrLn "jakas opcja zostala wybrana"
+          else do putStrLn "Wyjscie"
+                  return()
+
 
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
