@@ -5,7 +5,7 @@ import System.Directory
 import Data.Char
 import Control.Exception
 
--- Podstawowe typy
+-- Wykorzystywane typy danych
 data Bierka = Bierka TypBierki deriving Eq
 data TypBierki = Owca | Wilk deriving Eq
 type Pole = Maybe Bierka
@@ -71,9 +71,6 @@ updateBoard = updateMatrix
 deletePole::Pos-> Plansza-> Plansza
 deletePole p = updateBoard p emptyPole
 
---movePos::Pos-> Pos-> Board-> Board
---movePos p1 p2 b = updateBoard p2 (getPole b p1) (deletePole p1 b)
-
 setPieceOnBoard::TypBierki -> Pos -> Plansza -> Plansza
 setPieceOnBoard piece pos b = updateBoard pos (Just (Bierka piece)) b
 
@@ -88,10 +85,6 @@ updateList (x:xs) n f = x:updateList xs (n-1) f
 updateMatrix::(Int, Int)-> a-> [[a]]-> [[a]]
 updateMatrix (i,j) a m = updateList m i (\z-> updateList z j (const a))
 
---outside,inside::Pos-> Bool
---outside (a, b) = a < 0 || b < 0 || a > 7 || b > 7
---inside = not . outside
-
 isValidMove :: Int -> Int -> [(Int,Int)]-> Bool
 isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
                         not (elem (row, col) sheep)
@@ -100,18 +93,7 @@ isValidMove row col sheep = if row >= 0 && col >= 0 && row <=7 && col <=7 then
 
 emptyBoard::Plansza
 
---initialBoard::Board
-{--initialBoard = [[Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca), Nothing, Just (Bierka Owca)],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing],
-                [Just (Bierka Wilk), Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing]]
---}
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
---initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 askForInitialState :: IO Stan
 askForInitialState = do putStrLn ""
@@ -154,10 +136,6 @@ updateState (s:state) move = case move of
 getEmptyBoard :: Plansza
 getEmptyBoard = emptyBoard
 
-{--
-getInitialState :: Stan
-getInitialState = initialState
---}
 displayGame :: Stan -> IO()
 displayGame a = do printOptions
                    printInterface
@@ -326,8 +304,6 @@ listFiles = do
         cd <- getCurrentDirectory
         files <- getDirectoryContents cd
         print files
-
---initialGame = NowaGra( initialBoard, initialState )
 
 insertStateToBoard :: Stan -> Plansza
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
