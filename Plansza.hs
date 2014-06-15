@@ -103,7 +103,8 @@ emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 --initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
 
 askForInitialState :: IO Stan
-askForInitialState = do putStrLn "Podaj liczbe 0, 2, 4, 6 oznaczajaca poczatkowa pozycje Wilka"
+askForInitialState = do putStrLn ""
+                        putStrLn "Podaj liczbe 0, 2, 4, 6 oznaczajaca poczatkowa pozycje Wilka"
                         input <- getLine
                         case input of
                           "0" -> do let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
@@ -182,20 +183,76 @@ inputReader currentState = do
                                     inputReader currentState
                                 "7" -> do
                                     putStrLn "góra+lewo"
-                                    displayGame (pogonOwce (updateState currentState 7))
-                                    inputReader (pogonOwce (updateState currentState 7))
+                                    let new_state = updateState currentState 7
+                                    putStrLn (show new_state)
+                                    if (czyWilkWygrywa new_state) then do
+                                                   printWin
+                                                   state <- askForInitialState
+                                                   displayGame state
+                                                   inputReader state
+                                    else if czyOwceWygrywaja new_state then
+                                           do printLose
+                                              state <- askForInitialState
+                                              displayGame state
+                                              inputReader state
+                                    else do
+                                    let new_state2 = pogonOwce (new_state)
+                                    displayGame new_state2
+                                    inputReader new_state2
                                 "9" -> do
                                     putStrLn "góra+prawo"
-                                    displayGame (pogonOwce (updateState currentState 9))
-                                    inputReader (pogonOwce (updateState currentState 9))
+                                    let new_state = updateState currentState 9
+                                    putStrLn (show new_state)
+                                    if (czyWilkWygrywa new_state) then do
+                                                   printWin
+                                                   state <- askForInitialState
+                                                   displayGame state
+                                                   inputReader state
+                                    else if czyOwceWygrywaja new_state then
+                                           do printLose
+                                              state <- askForInitialState
+                                              displayGame state
+                                              inputReader state
+                                    else do
+                                    let new_state2 = pogonOwce (new_state)
+                                    displayGame new_state2
+                                    inputReader new_state2
                                 "1" -> do
                                     putStrLn "dół+lewo"
-                                    displayGame (pogonOwce (updateState currentState 1))
-                                    inputReader (pogonOwce (updateState currentState 1))
+                                    let new_state = updateState currentState 1
+                                    putStrLn (show new_state)
+                                    if (czyWilkWygrywa new_state) then do
+                                                   printWin
+                                                   state <- askForInitialState
+                                                   displayGame state
+                                                   inputReader state
+                                    else if czyOwceWygrywaja new_state then
+                                           do printLose
+                                              state <- askForInitialState
+                                              displayGame state
+                                              inputReader state
+                                    else do
+                                    let new_state2 = pogonOwce (new_state)
+                                    displayGame new_state2
+                                    inputReader new_state2
                                 "3" -> do
                                     putStrLn "dół+prawo"
-                                    displayGame (pogonOwce (updateState currentState 3))
-                                    inputReader (pogonOwce (updateState currentState 3))
+                                    let new_state = updateState currentState 3
+                                    putStrLn (show new_state)
+                                    if (czyWilkWygrywa new_state) then do
+                                                   printWin
+                                                   state <- askForInitialState
+                                                   displayGame state
+                                                   inputReader state
+                                    else if czyOwceWygrywaja new_state then
+                                           do printLose
+                                              state <- askForInitialState
+                                              displayGame state
+                                              inputReader state
+                                    else do
+                                    let new_state2 = pogonOwce (new_state)
+                                    displayGame new_state2
+                                    inputReader new_state2
                                 "n" -> do
                                     putStrLn "nowa gra"
                                     state <- askForInitialState
