@@ -291,7 +291,7 @@ inputReader currentState = do
                                   inputReader currentState
 
 saveStan :: Stan -> String -> IO Bool
-saveStan s a = if null a then return False else do
+saveStan s a = if null a || length a < 2 then return False else do
                                                       let tokens = words a
                                                       if head tokens == "z" then do
                                                           save s (tokens !! 1)
@@ -301,7 +301,7 @@ saveStan s a = if null a then return False else do
                                                           return False
 
 loadStan :: Stan -> String -> IO (Stan,Bool)
-loadStan s a = if null a then return (s,False) else do
+loadStan s a = if null a || length a < 2 then return (s,False) else do
                                                       let tokens = words a
                                                       if head tokens == "o" then do
                                                           ns <- try ( load (tokens !! 1)) :: IO (Either SomeException Stan)
