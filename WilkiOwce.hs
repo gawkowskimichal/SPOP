@@ -1,3 +1,4 @@
+--Gra "Wilk i owce" - projekt zrealizowany w semestrze 14L w ramach przedmiotu SPOP przez Michała Gawkowskiego i Łukasza Fijasa
 module WilkiOwce where
 
 import System.IO
@@ -25,7 +26,7 @@ main = do
           else do putStrLn "Wyjscie"
                   return()
 
-
+--
 printInterface::IO()
 printInterface = putStr "\nPodaj komende ruchu wilka: 7|9|1|3 \n 7 - góra+lewo \n 9 - góra+prawo \n 1 - dół+lewo \n 3 - dół+prawo \n"
 
@@ -95,6 +96,7 @@ emptyBoard::Plansza
 
 emptyBoard = [[Nothing|_<- [1..8]]|_<- [1..8]]
 
+--funkcja pozwalajacą użytkownikowi na ustalenie początkowego położenia wilka
 askForInitialState :: IO Stan
 askForInitialState = do putStrLn ""
                         putStrLn "Podaj liczbe 0, 2, 4, 6 oznaczajaca poczatkowa pozycje Wilka"
@@ -112,7 +114,7 @@ askForInitialState = do putStrLn ""
                                           let initialState = [(7,0), (0,1), (0,3), (0,5), (0,7)]
                                           return initialState
 
-
+--funkcja aktualizująca położenie pionów na planszy
 updateState :: [(Int, Int)] -> Int -> ([(Int, Int)],Bool)
 updateState (s:state) move = case move of
                                  7 -> if isValidMove (fst s - 1) (snd s - 1) state then
@@ -141,6 +143,7 @@ displayGame a = do printOptions
                    printInterface
                    printBoard (insertStateToBoard a)
 
+--funkcja obsługująca komendy podawane na wejście programu
 inputReader :: Stan -> IO Bool
 inputReader currentState = do
           str <- getLine
@@ -268,6 +271,7 @@ inputReader currentState = do
                                   displayGame currentState
                                   inputReader currentState
 
+--funkcja realizująca zapis aktualnego stanu gry do pliku
 saveStan :: Stan -> String -> IO Bool
 saveStan s a = if null a || length a < 2 then return False else do
                                                       let tokens = words a
@@ -277,7 +281,7 @@ saveStan s a = if null a || length a < 2 then return False else do
                                                           return True
                                                       else
                                                           return False
-
+--funkcja realizująca odczyt aktualnego stanu gry z pliku
 loadStan :: Stan -> String -> IO (Stan,Bool)
 loadStan s a = if null a || length a < 2 then return (s,False) else do
                                                       let tokens = words a
@@ -290,7 +294,7 @@ loadStan s a = if null a || length a < 2 then return (s,False) else do
                                                                          return (s,False)
                                                       else
                                                           return (s,False)
-
+--
 save :: Stan -> File_Path -> IO ()
 save zs f = writeFile f (show zs)
 
@@ -299,6 +303,7 @@ load f = do
          s <- readFile f
          return (read s)
 
+--funkcja wyświetlająca zawartość bieżącego katalogu
 listFiles :: IO()
 listFiles = do
         cd <- getCurrentDirectory
@@ -308,10 +313,11 @@ listFiles = do
 insertStateToBoard :: Stan -> Plansza
 insertStateToBoard a = setPiecesOnBoard a emptyBoard
 
-
+--funkcja sprawdzająca czy partię wygrał wilk
 czyWilkWygrywa :: Stan -> Bool
 czyWilkWygrywa (x:xs) = do if fst x == 0 then True else False
 
+--funkcja sprawdzająca czy partię wygrały owce
 czyOwceWygrywaja :: Stan -> Bool
 czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                                      || isValidMove (fst s - 1) (snd s + 1) state
@@ -320,14 +326,17 @@ czyOwceWygrywaja (s:state) =  if isValidMove (fst s - 1) (snd s - 1) state
                                      False
                               else True
 
+--funkcja wykorzystywana do oceny aktualnego stanu rozgrywki
 bliskoscWilkaDoZagrody :: Stan -> Int
 bliskoscWilkaDoZagrody (x:xs) =  7 - fst x							
-							
+
+--funkcja wykorzystywana do oceny aktualnego stanu rozgrywki							
 bliskoscOwiecDoWilka :: Stan -> Int
 bliskoscOwiecDoWilka (x:xs) = 0 - abs (fst x - fst (xs!!0)) - abs (snd x - snd (xs!!0))
 						- abs (fst x - fst (xs!!1)) - abs (snd x - snd (xs!!1))
 						- abs (fst x - fst (xs!!2)) - abs (snd x - snd (xs!!2))
 						- abs (fst x - fst (xs!!3)) - abs (snd x - snd (xs!!3))
+--funkcja wykorzystywana do oceny aktualnego stanu rozgrywki
 rozstrzalOwiec :: Stan -> Int
 rozstrzalOwiec (x:xs) = 0 - (abs (fst (xs!!0) - fst (xs!!1))
                                 + abs (fst (xs!!0) - fst (xs!!2))
@@ -336,9 +345,11 @@ rozstrzalOwiec (x:xs) = 0 - (abs (fst (xs!!0) - fst (xs!!1))
                                 + abs (fst (xs!!1) - fst (xs!!3))
                                 + abs (fst (xs!!2) - fst (xs!!3)))
 
+--funkcja oceniająca aktualny stan rozgrywki
 ocenStanWilka :: (Stan,[Stan]) -> Int
 ocenStanWilka a = 5 * (bliskoscWilkaDoZagrody (fst a)) + 1 * (bliskoscOwiecDoWilka (fst a))	 + 4 * (rozstrzalOwiec (fst a))					
 
+--funkcja określająca jakie ruchy mogą wykonać owce w danym posunięciu
 mozliweRuchyOwiec :: Stan -> Stan -> [Stan]
 mozliweRuchyOwiec stanGry [] = []
 mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s + 1) stanGry
@@ -366,12 +377,12 @@ mozliweRuchyWilka (x:xs) = [(fst z, snd z) | z <- nastepneStanyWilka (x:xs), isV
 mozliweStanyWilka :: Stan -> [Stan]
 mozliweStanyWilka (x:xs) = [ z:xs | z <- mozliweRuchyWilka (x:xs)]
 
---generacja nastepnego stanu
+--funkcja generująca poziom drzewa gry
 generujNastepnyPoziom :: Stan -> Int -> [Stan]
 generujNastepnyPoziom (x:xs) a = if a == 1 then mozliweStanyWilka (x:xs) else
 								 mozliweStanyOwiec (x:xs)
 								
---generacja drzewa gry
+--funkcja generująca drzewo gry
 generujDrzewo :: [Stan] -> Int -> Stan  -> DrzewoStanow
 generujDrzewo sciezka 0 stanGry = DrzewoStanow stanGry [] (sciezka++[stanGry])
 generujDrzewo sciezka glebokosc stanGry = if czyOwceWygrywaja stanGry || czyWilkWygrywa stanGry then DrzewoStanow stanGry [] (sciezka++[stanGry])
@@ -393,13 +404,14 @@ wybierzNajgorszyRuch ::[((Stan,[Stan]),Int)] -> (Stan,[Stan])
 wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x else wybierzNajlepszyRuch xs
 
 						
-
+--funkcja wybierająca na podstawie przeszukania drzewa gry (algorytm minimaksowy) najlepszy ruch owiec
 wybierzMinMax:: DrzewoStanow-> Int -> ((Stan,[Stan]),Int)
 wybierzMinMax (DrzewoStanow  stan [] sciezka) _ = ((stan,sciezka),(ocenStanWilka (stan,sciezka)))
 wybierzMinMax (DrzewoStanow  stan ds sciezka) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (stan,sciezka))
 wybierzMinMax (DrzewoStanow  stan ds sciezka) glebokosc = if mod glebokosc 2 == 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (stan,sciezka))
 													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (stan,sciezka))
 
+--funkcja realizująca ruchy owiec
 pogonOwce :: Stan -> Stan
 pogonOwce a =(snd (fst (wybierzMinMax (generujDrzewo [] 5 a) 0)))!!1
 												
