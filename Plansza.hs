@@ -207,25 +207,27 @@ inputReader currentState = do
                                   inputReader currentState
 
 saveStan :: Stan -> String -> IO Bool
-saveStan s a = do let tokens = words a
-                  if head tokens == "z" then do
-                      save s (tokens !! 1)
-                      putStrLn "Zapis udany!"
-                      return True
-                  else
-                      return False
+saveStan s a = if null a then return False else do
+                                                      let tokens = words a
+                                                      if head tokens == "z" then do
+                                                          save s (tokens !! 1)
+                                                          putStrLn "Zapis udany!"
+                                                          return True
+                                                      else
+                                                          return False
 
 loadStan :: Stan -> String -> IO (Stan,Bool)
-loadStan s a = do let tokens = words a
-                  if head tokens == "o" then do
-                      ns <- try ( load (tokens !! 1)) :: IO (Either SomeException Stan)
-                      case ns of
-                        Right stan -> do putStrLn "Odczyt udany!"
-                                         return (stan,True)
-                        Left e -> do putStrLn "Odczyt nieudany!!!"
-                                     return (s,False)
-                  else
-                      return (s,False)
+loadStan s a = if null a then return (s,False) else do
+                                                      let tokens = words a
+                                                      if head tokens == "o" then do
+                                                          ns <- try ( load (tokens !! 1)) :: IO (Either SomeException Stan)
+                                                          case ns of
+                                                            Right stan -> do putStrLn "Odczyt udany!"
+                                                                             return (stan,True)
+                                                            Left e -> do putStrLn "Odczyt nieudany!!!"
+                                                                         return (s,False)
+                                                      else
+                                                          return (s,False)
 
 save :: Stan -> File_Path -> IO ()
 save zs f = writeFile f (show zs)
@@ -283,8 +285,8 @@ mozliweRuchyOwiec stanGry (s:polozenieOwiec) = if isValidMove (fst s + 1) (snd s
 															
 mozliweStanyOwiec :: Stan -> [Stan]
 mozliweStanyOwiec (x:xs) = [[x]++[y]++[xs!!1]++[xs!!2]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 0)]
-						   ++ [[x]++[xs!!0]++[y]++[xs!!2]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 1)] 
-						   ++ [[x]++[xs!!0]++[xs!!1]++[y]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 2)] 
+						   ++ [[x]++[xs!!0]++[y]++[xs!!2]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 1)]
+						   ++ [[x]++[xs!!0]++[xs!!1]++[y]++[xs!!3] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 2)]
 						   ++ [[x]++[xs!!0]++[xs!!1]++[xs!!2]++[y] | y <- ((mozliweRuchyOwiec (x:xs) xs) !! 3)]
 
 
@@ -331,10 +333,10 @@ wybierzNajgorszyRuch (x:xs) = if isMin (snd x) (sameWyniki (x:xs)) then fst x el
 
 wybierzMinMax:: DrzewoStanow-> Int -> (Stan,Int)
 wybierzMinMax (DrzewoStanow  stan []) _ = (stan,(ocenStanWilka stan))
-wybierzMinMax (DrzewoStanow  stan ds) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))                                                   
+wybierzMinMax (DrzewoStanow  stan ds) 0 = (wybierzNajlepszyRuch (map (flip wybierzMinMax 1) ds), ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax 1) ds)))
 wybierzMinMax (DrzewoStanow  stan ds) glebokosc = if mod glebokosc 2 /= 0 then (wybierzNajlepszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds),  ocenStanWilka (wybierzNajlepszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
-													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds))) 
+													 else (wybierzNajgorszyRuch (map (flip wybierzMinMax (glebokosc + 1)) ds), ocenStanWilka (wybierzNajgorszyRuch  (map (flip wybierzMinMax (glebokosc + 1)) ds)))
 
 pogonOwce :: Stan -> Stan
 pogonOwce a = fst (wybierzMinMax (generujDrzewo 1 a) 0)
-												  
+												
